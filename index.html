@@ -5,30 +5,191 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Title</title>
   </head>
-  
-  <body>
-    <header>
-      <h1>FibrilGen API Reference</h1>
-    </header>
+
+<style>
+  .tab-space {
+    display: inline-block;
+    margin-left: 20px; /* Adjust the width of your tab here */
+  }
+</style>
+
+<body>
+  <header>
+    <h1>FibrilGen API Reference</h1>
+  </header>
+
+<div class="custom-select">
+  Choose version:
+  <select>
+    <option value="0">v1.0.0</option>
+  </select>
+  <!-- <input type="submit" value="Search"> -->
+</div>
+
 
 <main>
     
-<p>In this contect ...</p>
-    
-<h3 id="Section_further_down">Function list</h3>
-<ul class="current">
-    <li class="toctree-l1"><a class="reference internal" href="#Section_further_down">test1</a></li>
+<p>FibrilGen is a software project aimed at building cross-beta structures. The source code is provided at <a href="https://github.com/ChaoYuYang0/FibrilGen-v1">here</a>. The content below explains different levels of structural and positional manipulations of a cross-beta structure, explicitly described as:</p> 
+
+<p><i> peptide -> 2 x 2 unit -> cross-b fibril </i></p>
+
+<p>On the <b>peptide</b> level, users can create a peptide molecule by <a href="#get_b_strand">get_b_strand</a> and manipulate the side-chain angles by <a href="#set_chi_angle">set_chi_angle</a>.</p>
+
+<p>On the <b>2 x 2 unit</b> level, users can assign a peptide molecule and a linear segment to arrange four copied peptide molecules into a bilayer structure. Firstly, assign the peptide molecule and the linear segment, using <code class="descclassname">create_pep_unit(pep_filename: str, start_residue_index: int, end_residue_index: int, is_face_side: boolean)</code> as:
+</p> 
+
+<p>>>> <code class="descclassname">unit_first = create_pep_unit('pep',2,8,0)</code></p>
+
+<p>Secondly, create a sheet object from the unit object as:</p>
+<p>>>> <code class="descclassname">sheet = create_sheet(unit_first)</code></p>
+
+<p>To assemble a bilayer structure with assigned peptide alignments and the number of unit repeats, use <a href="#build_a_plain_sheet">sheet.build_a_plain_sheet</a>.</p>
+
+<p>On the <b>cross-b fibril</b> level, users can assign geometrical parameters to vary cross-beta structures that the given 2 x 2 unit assemble into. Firstly, assign the peptide molecule and the linear segment for the input bilayer structure, using <code class="descclassname">create_sheet_unit(len_pep: int, num_peps: int, start_residue_index: int, end_residue_index: int)</code> as: </p>
+
+<p>>>> <code class="descclassname">unit_second = create_sheet_unit(10,9,2,9)</code></p>
+
+<p>Then, create a fibril object from the unit object as:</p>
+
+<p>>>> <code class="descclassname">fibril = create_fibril(unit_second)</code></p>
+
+<p>To assemble a cross-beta fibril structure with assigned unit stacking and twisting patterns, use <a href="#build_a_plain_sheet">fibril.build_a_flat_sheet</a>, <a href="#build_a_stacked_sheet">fibril.build_a_stacked_sheet</a>, <a href="#build_a_rod">fibril.build_a_rod</a>, <a href="#build_a_stacked_rod">fibril.build_a_stacked_rod</a>, <a href="#build_a_ribbon">fibril.build_a_ribbon</a> or <a href="#build_a_stacked_ribbon">fibril.build_a_stacked_ribbon</a>.</p>
+
+<!-- Heading to link to -->
+<hr>
+<h2 id="get_b_strand">get_b_strand</h2>
+<p>Create a beta-strand molecule from the input amino acid sequence. Protonation states are assigned at pH 7.</p>
+<!-- <h3>Usage</h3> -->
+<code class="descclassname">get_b_strand(seq)</code>
+<h3>Arguments</h3>
+<ul><li>seq(str) - A sequence of starndard amino acids </li></ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">get_b_strand('FEFKFEFK')</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
+<h2 id="set_chi_angle">set_chi_angle</h2>
+<p>Set a chi angle for the input peptide molecule. The chi angle is defined by a dihedral angle.</p>
+<code class="descclassname">set_chi_angle(resi, atom1, atom2, atom3, atom4, angle)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>resi(int) - Residue index </li>
+  <li>atom1(str) - First atom for the dihedral angle </li>
+  <li>atom2(str) - Second atom for the dihedral angle </li>
+  <li>atom3(str) - Third atom for the dihedral angle </li>
+  <li>atom4(str) - Fourth atom for the dihedral angle </li>
+  <li>angle(float) - Dihedral angle </li>
 </ul>
-    
+<h3>Example</h3>
+<p>>>> <code class="descclassname">set_chi_angle(1,'n','ca','cb','cg',-20)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
 
-<h2 id="Section_further_down">Section further down</h2>
+<h2 id="build_a_plain_sheet">sheet.build_a_plain_sheet</h2>
+<p>Create a bilayer structure for the input peptide alignments and the number of repeated alignements</p>
+<code class="descclassname">sheet.build_a_plain_sheet(peptide_alignment, is_face_to_face, num_units)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>peptide_alignment(str) -  Appended parallel (p) or antiparallel (a) backbone alignments for two beta-sheets. Assign the intra-sheet alignment of the inner beta-sheet; the inter-sheet alignment between the inner and outer beta-sheets; and the intra-sheet alignment of the outer beta-sheet. There are eight possible combinations: 'aaa', 'apa', 'aap', 'app', 'paa', 'ppa', 'pap', and 'ppp'.</li>
+  <li>is_face_to_face(boolean) - True if two sheets are aligned face-to-face, else False.</li>
+  <li>num_units(int) - Number of unit repeat </li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">build_a_plain_sheet('ppa',1,5)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
 
-    
+<h2 id="build_a_flat_sheet">fibril.build_a_flat_sheet</h2>
+<p>Create a sheet structure by repeating the 2 x 2 unit along the vertical axis.<p>
+<code class="descclassname">fibril.build_a_flat_sheet(num_units)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>num_units(int) - Number of unit repeat along the vertical axis</li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">fibril.build_a_flat_sheet(5)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
+<h2 id="build_a_stacked_sheet">fibril.build_a_stacked_sheet</h2>
+<p>Create a stacked sheet structure by repeating the 2 x 2 unit along the vertical axis and perpendicular to the vertical axis.<p>
+<code class="descclassname">fibril.build_a_stacked_sheet(k_matrix, num_units)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>k_matrix(list) - A binary matrix assigning whether a 2 x 2 unit is presented on the fibril cross-section</li>
+  <li>num_units(int) - Number of unit repeat along the vertical axis</li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">fibril.build_a_stacked_sheet([[0,1],[1,1]],5)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
+<h2 id="build_a_rod">fibril.build_a_rod</h2>
+<p>Create a rod structure by an initial helical twist and repeating the 2 x 2 unit along the vertical axis.<p>
+<code class="descclassname">fibril.build_a_rod(tilt_angle, num_units, twist_sign)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>tilt_angle(float) - Initial tilt angle to rotate the fibril </li>
+  <li>num_units(int) - Number of unit repeat along the vertical axis</li>
+  <li>twist_sign(int) - Assigned to 1 for left-handed twist, and -1 for right-handed twist</li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">fibril.build_a_rod(20,25,1)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
+<h2 id="build_a_stacked_rod">fibril.build_a_stacked_rod</h2>
+<p>Create a stacked rod structure by confined stacking on the fibril cross-section, an initial helical twist, and repeating the 2 x 2 unit along the vertical axis.<p>
+<code class="descclassname">fibril.build_a_stacked_rod(tilt_angle, k_matrix, num_units, twist_sign)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>tilt_angle(float) - Initial tilt angle to rotate the fibril</li>
+  <li>k_matrix(list) - A binary matrix assigning whether a 2 x 2 unit is presented on the fibril cross-section</li>
+  <li>num_units(int) - Number of unit repeat along the vertical axis</li>
+  <li>twist_sign(int) - Assigned to 1 for left-handed twist, and -1 for right-handed twist</li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">fibril.build_a_stacked_rod(10,[[0,1],[1,1]],15,1)  </code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
+<h2 id="build_a_ribbon">fibril.build_a_ribbon</h2>
+<p>Create a ribbon structure by an initial helical twist, and repeating the 2 x 2 unit along the vertical axis.<p>
+<code class="descclassname">fibril.build_a_ribbon(tilt_angle, radius, num_units, twist_sign)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>tilt_angle(float) - Initial tilt angle to rotate the fibril</li>
+  <li>radius(float) - Initial radius to rotate the fibril</li>
+  <li>num_units(int) - Number of unit repeat along the vertical axis</li>
+  <li>twist_sign(int) - Assigned to 1 for left-handed twist, and -1 for right-handed twist</li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">fibril.build_a_ribbon(10,30,60,-1)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
+<h2 id="build_a_stacked_ribbon">fibril.build_a_stacked_ribbon</h2>
+<p>Create a stacked ribbon structure by confined stacking on the fibril cross-section, an initial helical twist, and repeating the 2 x 2 unit along the vertical axis.<p>
+<code class="descclassname">fibril.build_a_stacked_ribbon(tilt_angle, radius, neighbouring_stacking_angle, M_stacking, num_units, twist_sign)</code>
+<h3>Arguments</h3>
+<ul>
+  <li>tilt_angle(float) - Initial tilt angle to rotate the fibril</li>
+  <li>radius(float) - Initial radius to rotate the fibril</li>
+  <li>neighbouring_stacking_angle(float) - Angular displacement of units on the fibril cross-section.
+  <li>M_stacking(int) - Number of rotated units on the fibril cross-section</li>
+  <li>num_units(int) - Number of unit repeat along the vertical axis</li>
+  <li>twist_sign(int) - Assigned to 1 for left-handed twist, and -1 for right-handed twist</li>
+</ul>
+<h3>Example</h3>
+<p>>>> <code class="descclassname">fibril.build_a_stacked_ribbon(10,30,110,2,20,1)</code></p>
+<p>Return to the <a href="#">top</a>.</p>
+<hr>
+
 </main>
     
 <footer>
 <p>&copy; 2026 Chao-Yu Yang. All Rights Reserved.</p>
 </footer>
   
-  </body>
+</body>
 </html>
